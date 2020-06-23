@@ -2,11 +2,22 @@
 <html>
   <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
     <title>Hello World!</title>
     <link rel="stylesheet" href="index.css">
+    <script defer src="render.js"></script>
   </head>
   <body>
-    <h1>💖 Hello World!</h1>
-    <p>Welcome to your Electron application.</p>
+
+    <div class="centerContent">
+      <video></video>
+    </div>
+
+    <div class="centerContent">
+      <button id="startBtn">&#9679;</button>
+      <button id="stopBtn">&#9632;</button>
+      <button id="sourceBtn">&#8801;</button>
+    </div>
+
   </body>
 </html>
