@@ -1,33 +1,53 @@
 const { desktopCapturer, remote } = require('electron')
 const { writeFile } = require('fs')
-const { dialog, Menu } = remote
+const { dialog } = remote
 
 // Global state
-const videoType = 'video/webm; codecs=vp9'
-let mediaRecorder // MediaRecorder instance to capture footage
-const recordedChunks = []
-
-// Buttons
+const currentWindow = remote.getCurrentWindow()
 const videoElement = document.querySelector('video')
 
-const startBtn = document.getElementById('startBtn')
-startBtn.disabled = true
-startBtn.onclick = e => {
-  mediaRecorder.start()
-  startBtn.disabled = true
-  stopBtn.disabled = false
-}
+const closeBtn = document.querySelector('#closeBtn')
+const sourceBtn = document.querySelector('#sourceBtn>div')
+const sourceBtnDrop = document.querySelector('#sourceBtn>ul')
+const dragBtn = document.querySelector('#dragBtn')
 
-const stopBtn = document.getElementById('stopBtn')
-stopBtn.disabled = true
-stopBtn.onclick = e => {
-  mediaRecorder.stop()
-  stopBtn.disabled = true
-  startBtn.disabled = false
-}
-
-const sourceBtn = document.getElementById('sourceBtn')
+closeBtn.onclick = () => currentWindow.close()
 sourceBtn.onclick = getSources
+currentWindow.onclick = () => console.log('blau')
+
+let offsetTop = window.screenTop
+let offsetLeft = window.screenLeft
+
+function updateCoordinates() {
+
+  videoElement.style.marginTop
+    = `${offsetTop - window.screenTop}px`
+    videoElement.style.marginLeft
+    = `${offsetLeft - window.screenLeft}px`
+}
+
+window.onresize = updateCoordinates()
+
+window.onkeydown = e => {
+  if (e.ctrlKey) {
+    switch (e.keyCode) {
+      case 37: //left
+        offsetLeft--
+        break
+      case 38: //up
+        offsetTop--
+        break
+      case 39: //right
+        offsetLeft++
+        break
+      case 40: //down
+        offsetTop++
+        break
+      default: //nothing
+    }
+    updateCoordinates()
+  }
+}
 
 // Get the avaliable video sources
 async function getSources() {
@@ -35,19 +55,25 @@ async function getSources() {
     types: ['window', 'screen']
   })
 
-  const optionsMenu = Menu.buildFromTemplate(
-    sources.map(src => ({
-      label: src.name,
-      click: () => selectSource(src)
-    }))
-  )
+  sourceBtnDrop.innerHTML = ''
+  sources.forEach(src => {
+    if (src.name !== 'foobar') {
+      const el = document.createElement('ul')
+      el.innerHTML = `<div class="btn">${src.name}</div>`
+      el.onclick = () => selectSource(src)
+      sourceBtnDrop.appendChild(el)
+    }
+  })
 
-  optionsMenu.popup()
+  if (sourceBtnDrop.classList.contains('active')) {
+    sourceBtnDrop.classList.remove('active')
+  } else {
+    sourceBtnDrop.classList.add('active')
+  }
 }
 
 // Change the source window to record
 async function selectSource(src) {
-  sourceBtn.innerText = src.name
 
   const constraints = {
     audio: false,
@@ -66,38 +92,7 @@ async function selectSource(src) {
   videoElement.srcObject = stream
   videoElement.play()
 
-  // Create the Media Recorder
-  const options = { mimeType: videoType }
-  mediaRecorder = new MediaRecorder(stream, options)
-
-  // Register Event Handlers
-  mediaRecorder.ondataavaliable = handleDataAvaliable
-  mediaRecorder.onstop = handleStop
-
-  // Enable startBtn
-  startBtn.disabled = false
-}
-
-// Captures all recorded chunks
-function handleDataAvaliable(e) {
-  console.log('video data avaliable')
-  recordedChunks.push(e.data)
-}
-
-// Saves the video file on stop
-async function handleStop(e) {
-  const blob = new Blob(recordedChunks, { type: videoType })
-
-  const buffer = Buffer.from(await blob.arrayBuffer())
-
-  const { filePath } = await dialog.showSaveDialog({
-    buttonLabel: 'Save video',
-    defaultPath: `vid-${Date.now()}.webm`
-  })
-
-  console.log(filePath)
-
-  writeFile(filePath, buffer, () => console.log('video saved'))
+  sourceBtnDrop.classList.remove('active')
 }
 
 // Thanks Fireship ^_^ (youtu.be/3yqDxhR2XxE)
