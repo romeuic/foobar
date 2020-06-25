@@ -1,40 +1,94 @@
 const { desktopCapturer, remote } = require('electron')
-const { writeFile } = require('fs')
-const { dialog } = remote
 
-// Global state
 const currentWindow = remote.getCurrentWindow()
+let cursor = { isDown: false, from: { x: null, y: null } }
+
 const videoElement = document.querySelector('video')
-let currentSource = {}
+videoElement.onloadedmetadata = () => videoElement.play()
+videoElement.onmousedown = videoDragStart
+videoElement.onmousemove = videoDragging
+videoElement.onmouseup = videoDragEnd
 
-const closeBtn = document.querySelector('#closeBtn')
-const sourceBtn = document.querySelector('#sourceBtn>div')
-const sourceBtnDrop = document.querySelector('#sourceBtn>ul')
-const dragBtn = document.querySelector('#dragBtn')
+const monitorElement = document.getElementById('monitor')
+monitorElement.ondragover = e => e.preventDefault()
 
+let currentSource = { name: null }
+
+const closeBtn = document.getElementById('closeBtn')
 closeBtn.onclick = () => currentWindow.close()
+
+const sourceBtn = document.querySelector('#sourceBtn>div')
 sourceBtn.onclick = getSources
 
-let offsetTop = window.screenTop
-let offsetLeft = window.screenLeft
+const sourceBtnDrop = document.querySelector('#sourceBtn>ul')
 
-function updateCoordinates() {
-  videoElement.style.marginTop = `${offsetTop - window.screenTop}px`
-  videoElement.style.marginLeft = `${offsetLeft - window.screenLeft}px`
+let offsetTop = -window.screenTop
+let offsetLeft = -window.screenLeft
+let cropTop = 0
+let cropLeft = 0
+
+function videoDragStart(e) {
+  cursor.isDown = true
+  cursor.from.x = e.screenX
+  cursor.from.y = e.screenY
 }
 
-window.onresize = updateCoordinates()
+function videoDragEnd(e) {
+  cursor.isDown = false
+  if (e.ctrlKey) {
+    offsetLeft -= e.screenX - cursor.from.x
+    offsetTop -= e.screenY - cursor.from.y
+    updateCrop()
+  }
+}
+
+function videoDragging(e) {
+  if (e.ctrlKey && cursor.isDown) {
+    const moveX = e.screenX - cursor.from.x
+    const moveY = e.screenY - cursor.from.y
+    videoElement.style.left = `${-cropLeft + moveX}px`
+    videoElement.style.top = `${-cropTop + moveY}px`
+  }
+}
+
+function updateCrop(direction) {
+
+  switch (direction) {
+    case 'left': offsetLeft++; break
+    case 'up': offsetTop++; break
+    case 'right': offsetLeft--; break
+    case 'down': offsetTop--; break
+  }
+
+  cropLeft = offsetLeft + window.screenLeft
+  cropTop = offsetTop + window.screenTop
+
+  //console.log({ videoElement })
+  //videoElement.videoWidth
+  //videoElement.videoHeight
+
+  videoElement.style.left = `${-cropLeft}px`
+  videoElement.style.top = `${-cropTop}px`
+}
+
+window.onresize = updateCrop()
 
 window.onkeydown = e => {
   if (e.ctrlKey) {
     switch (e.keyCode) {
-      case 37: offsetLeft--; break //left
-      case 38: offsetTop--; break //up
-      case 39: offsetLeft++; break //right
-      case 40: offsetTop++; break //down
-      default: //nothing
+      case 37: updateCrop('left'); break //left
+      case 38: updateCrop('up'); break //up
+      case 39: updateCrop('right'); break //right
+      case 40: updateCrop('down'); break //down
+      case 32: updateCrop(); break //space
     }
-    updateCoordinates()
+    videoElement.classList.add('canDrag')
+  }
+}
+
+window.onkeyup = e => {
+  if (e.keyCode === 17) { //ctrl
+    videoElement.classList.remove('canDrag')
   }
 }
 
@@ -49,7 +103,9 @@ async function getSources() {
     if (src.name !== 'foobar') {
       const el = document.createElement('li')
       el.innerHTML = `<div class="btn">${src.name}</div>`
+
       el.onclick = () => selectSource(src)
+
       if (currentSource.name === src.name) {
         el.classList.add('selected')
       } 
@@ -66,6 +122,11 @@ async function getSources() {
 
 // Change the source window to record
 async function selectSource(src) {
+
+  offsetTop = -window.screenTop
+  offsetLeft = -window.screenLeft
+  updateCrop()
+
   currentSource = src
   const constraints = {
     audio: false,
@@ -82,9 +143,6 @@ async function selectSource(src) {
 
   // Preview the source in a video element
   videoElement.srcObject = stream
-  videoElement.play()
 
   sourceBtnDrop.classList.remove('active')
 }
-
-// Thanks Fireship ^_^ (youtu.be/3yqDxhR2XxE)
