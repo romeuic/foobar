@@ -2,7 +2,7 @@
   "name": "foobar",
   "productName": "foobar",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "lucky guess",
   "main": "src/index.js",
   "scripts": {
     "start": "electron-forge start",
@@ -14,9 +14,9 @@
   "keywords": [],
   "author": {
     "name": "romeuic",
-    "email": "romeu.casarotto@chipinside.com.br"
+    "email": "casarottori@gmail.com"
   },
-  "license": "MIT",
+  "license": "GPL",
   "config": {
     "forge": {
       "packagerConfig": {},
