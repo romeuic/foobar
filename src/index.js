@@ -9,8 +9,8 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 647,
+    height: 400,
     transparent: true, //linux: --enable-transparent-visuals --disable-gpu
     frame: false,
     alwaysOnTop: true,

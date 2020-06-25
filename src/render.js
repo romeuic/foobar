@@ -5,6 +5,7 @@ const { dialog } = remote
 // Global state
 const currentWindow = remote.getCurrentWindow()
 const videoElement = document.querySelector('video')
+let currentSource = {}
 
 const closeBtn = document.querySelector('#closeBtn')
 const sourceBtn = document.querySelector('#sourceBtn>div')
@@ -13,17 +14,13 @@ const dragBtn = document.querySelector('#dragBtn')
 
 closeBtn.onclick = () => currentWindow.close()
 sourceBtn.onclick = getSources
-currentWindow.onclick = () => console.log('blau')
 
 let offsetTop = window.screenTop
 let offsetLeft = window.screenLeft
 
 function updateCoordinates() {
-
-  videoElement.style.marginTop
-    = `${offsetTop - window.screenTop}px`
-    videoElement.style.marginLeft
-    = `${offsetLeft - window.screenLeft}px`
+  videoElement.style.marginTop = `${offsetTop - window.screenTop}px`
+  videoElement.style.marginLeft = `${offsetLeft - window.screenLeft}px`
 }
 
 window.onresize = updateCoordinates()
@@ -31,18 +28,10 @@ window.onresize = updateCoordinates()
 window.onkeydown = e => {
   if (e.ctrlKey) {
     switch (e.keyCode) {
-      case 37: //left
-        offsetLeft--
-        break
-      case 38: //up
-        offsetTop--
-        break
-      case 39: //right
-        offsetLeft++
-        break
-      case 40: //down
-        offsetTop++
-        break
+      case 37: offsetLeft--; break //left
+      case 38: offsetTop--; break //up
+      case 39: offsetLeft++; break //right
+      case 40: offsetTop++; break //down
       default: //nothing
     }
     updateCoordinates()
@@ -58,9 +47,12 @@ async function getSources() {
   sourceBtnDrop.innerHTML = ''
   sources.forEach(src => {
     if (src.name !== 'foobar') {
-      const el = document.createElement('ul')
+      const el = document.createElement('li')
       el.innerHTML = `<div class="btn">${src.name}</div>`
       el.onclick = () => selectSource(src)
+      if (currentSource.name === src.name) {
+        el.classList.add('selected')
+      } 
       sourceBtnDrop.appendChild(el)
     }
   })
@@ -74,7 +66,7 @@ async function getSources() {
 
 // Change the source window to record
 async function selectSource(src) {
-
+  currentSource = src
   const constraints = {
     audio: false,
     video: {
