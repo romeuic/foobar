@@ -14,9 +14,6 @@ monitorElement.ondragover = e => e.preventDefault()
 
 let currentSource = { name: null }
 
-const closeBtn = document.getElementById('closeBtn')
-closeBtn.onclick = () => currentWindow.close()
-
 const sourceBtn = document.querySelector('#sourceBtn>div')
 sourceBtn.onclick = getSources
 
@@ -112,12 +109,6 @@ async function getSources() {
       sourceBtnDrop.appendChild(el)
     }
   })
-
-  if (sourceBtnDrop.classList.contains('active')) {
-    sourceBtnDrop.classList.remove('active')
-  } else {
-    sourceBtnDrop.classList.add('active')
-  }
 }
 
 // Change the source window to record
@@ -146,3 +137,24 @@ async function selectSource(src) {
 
   sourceBtnDrop.classList.remove('active')
 }
+
+
+/* ------------------------ UI ------------------------ */
+
+function addListener(selector, event, func) {
+  const nodes = document.querySelectorAll(selector)
+
+  for (let i = 0; i < nodes.length; i++) {
+    nodes[i].addEventListener(event, e => func(e, nodes[i]), true)
+  }
+}
+
+addListener('#closeBtn', 'click', () => currentWindow.close())
+
+addListener('.drop', 'click', (e, drop) => {
+  if (drop.classList.contains('active')) {
+    drop.classList.remove('active')
+  } else {
+    drop.classList.add('active')
+  }
+})

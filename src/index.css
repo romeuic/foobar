@@ -65,7 +65,7 @@ body {
   flex-direction: column;
 }
 
-.drop>ul.active,
+.drop.active>ul,
 .drop>ul>li {
   display: flex
 }
