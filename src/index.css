@@ -61,13 +61,21 @@ body {
   position: absolute;
   list-style: none;
   background-color: #333;
-  display: none;
   flex-direction: column;
+  display: none;
+  pointer-events: none;
+}
+
+.drop.side>ul {
+  left: 100%;
+  top: 0;
 }
 
 .drop.active>ul,
+.drop .drop:hover>ul,
 .drop>ul>li {
-  display: flex
+  display: flex;
+  pointer-events: auto;
 }
 
 .drop>ul>li,

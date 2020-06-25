@@ -14,10 +14,10 @@ monitorElement.ondragover = e => e.preventDefault()
 
 let currentSource = { name: null }
 
-const sourceBtn = document.querySelector('#sourceBtn>div')
-sourceBtn.onclick = getSources
+const sourceDropBtn = document.querySelector('#sourceDrop>.btn')
+sourceDropBtn.onmouseenter = getSources
 
-const sourceBtnDrop = document.querySelector('#sourceBtn>ul')
+const sourceDropList = document.querySelector('#sourceDrop>ul')
 
 let offsetTop = -window.screenTop
 let offsetLeft = -window.screenLeft
@@ -95,7 +95,7 @@ async function getSources() {
     types: ['window', 'screen']
   })
 
-  sourceBtnDrop.innerHTML = ''
+  sourceDropList.innerHTML = ''
   sources.forEach(src => {
     if (src.name !== 'foobar') {
       const el = document.createElement('li')
@@ -106,7 +106,7 @@ async function getSources() {
       if (currentSource.name === src.name) {
         el.classList.add('selected')
       } 
-      sourceBtnDrop.appendChild(el)
+      sourceDropList.appendChild(el)
     }
   })
 }
@@ -135,7 +135,7 @@ async function selectSource(src) {
   // Preview the source in a video element
   videoElement.srcObject = stream
 
-  sourceBtnDrop.classList.remove('active')
+  getSources()
 }
 
 
@@ -151,7 +151,7 @@ function addListener(selector, event, func) {
 
 addListener('#closeBtn', 'click', () => currentWindow.close())
 
-addListener('.drop', 'click', (e, drop) => {
+addListener('.drop.static', 'click', (e, drop) => {
   if (drop.classList.contains('active')) {
     drop.classList.remove('active')
   } else {
