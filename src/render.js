@@ -10,6 +10,7 @@ video.onmousemove = videoDragging
 video.onmouseup = videoDragEnd
 
 const canvas = document.querySelector('canvas')
+const canvas2d = canvas.getContext('2d')
 const img = document.querySelector('img')
 
 const monitor = document.getElementById('monitor')
@@ -83,15 +84,18 @@ function updateCrop(direction) {
     && crop.left + crop.width <= video.offsetWidth
     && crop.top + crop.height <= video.offsetHeight
   ) {
-    console.log('good to go')
-    canvas.getContext('2d').drawImage(
+    canvas2d.drawImage(
       video,
       crop.left, crop.top, crop.width, crop.height,
       0, 0, crop.width, crop.height
     )
     img.setAttribute('src', canvas.toDataURL('image/jpeg'))
+
+    // to be continued
+    //console.log(canvas2d.getImageData(0, 0, crop.width, crop.height))
+
   } else {
-    console.log('nope')
+    console.error('nope')
   }
 }
 
