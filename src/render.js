@@ -9,8 +9,12 @@ video.onmousedown = videoDragStart
 video.onmousemove = videoDragging
 video.onmouseup = videoDragEnd
 
-const canvas = document.querySelector('canvas')
-const canvas2d = canvas.getContext('2d')
+const canvasSrc = document.querySelector('canvas#source')
+const canvasSrc2d = canvasSrc.getContext('2d')
+
+const canvasBfr = document.querySelector('canvas#buffer')
+const canvasBfr2d = canvasBfr.getContext('2d')
+
 const img = document.querySelector('img')
 
 const monitor = document.getElementById('monitor')
@@ -36,9 +40,13 @@ let crop = {
 }
 
 function videoDragStart(e) {
-  cursor.isDown = true
-  cursor.from.x = e.screenX
-  cursor.from.y = e.screenY
+  cursor = {
+    isDown: true,
+    from: {
+      x: e.screenX,
+      y: e.screenY,
+    }
+  }
 }
 
 function videoDragEnd(e) {
@@ -77,22 +85,22 @@ function updateCrop(direction) {
 
   video.style.left = `${-crop.left}px`
   video.style.top = `${-crop.top}px`
-  canvas.width = crop.width
-  canvas.height = crop.height
+  canvasBfr.width = canvasSrc.width = crop.width
+  canvasBfr.height = canvasSrc.height = crop.height
 
   if (crop.left >= 0 && crop.top >= 0
     && crop.left + crop.width <= video.offsetWidth
     && crop.top + crop.height <= video.offsetHeight
   ) {
-    canvas2d.drawImage(
+    canvasSrc2d.drawImage(
       video,
       crop.left, crop.top, crop.width, crop.height,
       0, 0, crop.width, crop.height
     )
-    img.setAttribute('src', canvas.toDataURL('image/jpeg'))
+    img.setAttribute('src', canvasSrc.toDataURL('image/jpeg'))
 
     // to be continued
-    //console.log(canvas2d.getImageData(0, 0, crop.width, crop.height))
+    //console.log(canvasSrc2d.getImageData(0, 0, crop.width, crop.height))
 
   } else {
     console.error('nope')
@@ -110,14 +118,14 @@ window.onkeydown = e => {
       //case 13: foobar(); break //enter
     }
     video.classList.add('canDrag')
-    canvas.style.opacity = 0
+    canvasSrc.style.opacity = 0
   }
 }
 
 window.onkeyup = e => {
   if (e.keyCode === 17) { //ctrl
     video.classList.remove('canDrag')
-    canvas.style.opacity = 1
+    canvasSrc.style.opacity = 1
   }
 }
 
