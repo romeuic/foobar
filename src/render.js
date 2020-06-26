@@ -3,14 +3,17 @@ const { desktopCapturer, remote } = require('electron')
 const currentWindow = remote.getCurrentWindow()
 let cursor = { isDown: false, from: { x: null, y: null } }
 
-const videoElement = document.querySelector('video')
-videoElement.onloadedmetadata = () => videoElement.play()
-videoElement.onmousedown = videoDragStart
-videoElement.onmousemove = videoDragging
-videoElement.onmouseup = videoDragEnd
+const video = document.querySelector('video')
+video.onloadedmetadata = () => video.play()
+video.onmousedown = videoDragStart
+video.onmousemove = videoDragging
+video.onmouseup = videoDragEnd
 
-const monitorElement = document.getElementById('monitor')
-monitorElement.ondragover = e => e.preventDefault()
+const canvas = document.querySelector('canvas')
+const img = document.querySelector('img')
+
+const monitor = document.getElementById('monitor')
+monitor.ondragover = e => e.preventDefault()
 
 let currentSource = { name: null }
 
@@ -19,10 +22,17 @@ sourceDropBtn.onmouseenter = getSources
 
 const sourceDropList = document.querySelector('#sourceDrop>ul')
 
-let offsetTop = -window.screenTop
-let offsetLeft = -window.screenLeft
-let cropTop = 0
-let cropLeft = 0
+let offset = {
+  top: -window.screenTop,
+  left: -window.screenLeft,
+}
+
+let crop = {
+  top: 0,
+  left: 0,
+  width: monitor.offsetWidth,
+  height: monitor.offsetHeight,
+}
 
 function videoDragStart(e) {
   cursor.isDown = true
@@ -33,8 +43,8 @@ function videoDragStart(e) {
 function videoDragEnd(e) {
   cursor.isDown = false
   if (e.ctrlKey) {
-    offsetLeft -= e.screenX - cursor.from.x
-    offsetTop -= e.screenY - cursor.from.y
+    offset.left -= e.screenX - cursor.from.x
+    offset.top -= e.screenY - cursor.from.y
     updateCrop()
   }
 }
@@ -43,32 +53,47 @@ function videoDragging(e) {
   if (e.ctrlKey && cursor.isDown) {
     const moveX = e.screenX - cursor.from.x
     const moveY = e.screenY - cursor.from.y
-    videoElement.style.left = `${-cropLeft + moveX}px`
-    videoElement.style.top = `${-cropTop + moveY}px`
+    video.style.left = `${-crop.left + moveX}px`
+    video.style.top = `${-crop.top + moveY}px`
   }
 }
 
 function updateCrop(direction) {
 
   switch (direction) {
-    case 'left': offsetLeft++; break
-    case 'up': offsetTop++; break
-    case 'right': offsetLeft--; break
-    case 'down': offsetTop--; break
+    case 'left': offset.left++; break
+    case 'up': offset.top++; break
+    case 'right': offset.left--; break
+    case 'down': offset.top--; break
   }
 
-  cropLeft = offsetLeft + window.screenLeft
-  cropTop = offsetTop + window.screenTop
+  crop = {
+    left: offset.left + window.screenLeft,
+    top: offset.top + window.screenTop,
+    width: monitor.offsetWidth,
+    height: monitor.offsetHeight,
+  }
 
-  //console.log({ videoElement })
-  //videoElement.videoWidth
-  //videoElement.videoHeight
+  video.style.left = `${-crop.left}px`
+  video.style.top = `${-crop.top}px`
+  canvas.width = crop.width
+  canvas.height = crop.height
 
-  videoElement.style.left = `${-cropLeft}px`
-  videoElement.style.top = `${-cropTop}px`
+  if (crop.left >= 0 && crop.top >= 0
+    && crop.left + crop.width <= video.offsetWidth
+    && crop.top + crop.height <= video.offsetHeight
+  ) {
+    console.log('good to go')
+    canvas.getContext('2d').drawImage(
+      video,
+      crop.left, crop.top, crop.width, crop.height,
+      0, 0, crop.width, crop.height
+    )
+    img.setAttribute('src', canvas.toDataURL('image/jpeg'))
+  } else {
+    console.log('nope')
+  }
 }
-
-window.onresize = updateCrop()
 
 window.onkeydown = e => {
   if (e.ctrlKey) {
@@ -77,15 +102,18 @@ window.onkeydown = e => {
       case 38: updateCrop('up'); break //up
       case 39: updateCrop('right'); break //right
       case 40: updateCrop('down'); break //down
-      case 32: updateCrop(); break //space
+      //case 32: updateCrop(); break //space
+      //case 13: foobar(); break //enter
     }
-    videoElement.classList.add('canDrag')
+    video.classList.add('canDrag')
+    canvas.style.opacity = 0
   }
 }
 
 window.onkeyup = e => {
   if (e.keyCode === 17) { //ctrl
-    videoElement.classList.remove('canDrag')
+    video.classList.remove('canDrag')
+    canvas.style.opacity = 1
   }
 }
 
@@ -114,8 +142,8 @@ async function getSources() {
 // Change the source window to record
 async function selectSource(src) {
 
-  offsetTop = -window.screenTop
-  offsetLeft = -window.screenLeft
+  offset.top = -window.screenTop
+  offset.left = -window.screenLeft
   updateCrop()
 
   currentSource = src
@@ -133,7 +161,7 @@ async function selectSource(src) {
   const stream = await navigator.mediaDevices.getUserMedia(constraints)
 
   // Preview the source in a video element
-  videoElement.srcObject = stream
+  video.srcObject = stream
 
   getSources()
 }
@@ -158,3 +186,13 @@ addListener('.drop.static', 'click', (e, drop) => {
     drop.classList.add('active')
   }
 })
+
+function tick() {
+  setTimeout(() => {
+    if (!video.classList.contains('canDrag')) {
+      updateCrop()
+    }
+    tick()
+  }, 1000)
+}
+tick()
