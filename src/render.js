@@ -9,11 +9,9 @@ video.onmousedown = videoDragStart
 video.onmousemove = videoDragging
 video.onmouseup = videoDragEnd
 
-const canvasSrc = document.querySelector('canvas#source')
+const canvasSrc = document.querySelector('canvas')
 const canvasSrc2d = canvasSrc.getContext('2d')
-
-const canvasBfr = document.querySelector('canvas#buffer')
-const canvasBfr2d = canvasBfr.getContext('2d')
+let sourceData = null
 
 const img = document.querySelector('img')
 
@@ -85,8 +83,8 @@ function updateCrop(direction) {
 
   video.style.left = `${-crop.left}px`
   video.style.top = `${-crop.top}px`
-  canvasBfr.width = canvasSrc.width = crop.width
-  canvasBfr.height = canvasSrc.height = crop.height
+  canvasSrc.width = crop.width
+  canvasSrc.height = crop.height
 
   if (crop.left >= 0 && crop.top >= 0
     && crop.left + crop.width <= video.offsetWidth
@@ -99,8 +97,38 @@ function updateCrop(direction) {
     )
     img.setAttribute('src', canvasSrc.toDataURL('image/jpeg'))
 
-    // to be continued
-    //console.log(canvasSrc2d.getImageData(0, 0, crop.width, crop.height))
+    sourceData = canvasSrc2d.getImageData(0, 0, crop.width, crop.height)
+
+    let d = sourceData.data
+    let height = sourceData.height
+    let width = sourceData.width
+
+    const getPixel = (x, y) => {
+      const i = y * width * 4 + x * 4
+      const [ir, ig, ib, ia] = [i, i + 1, i + 2, i + 3]
+      return {
+        i,
+        rgba: (r = null, g = null, b = null, a = null) => {
+          if (r !== null) d[ir] = r
+          if (g !== null) d[ig] = g
+          if (b !== null) d[ib] = b
+          if (a !== null) d[ia] = a
+        },
+        r: d[ir],
+        g: d[ig],
+        b: d[ib],
+        a: d[ia],
+      }
+    }
+
+    for (let y = 0; y < height; y++) { //lines
+      for (let x = 0; x < width; x++) { //columns
+        const p = getPixel(x, y)
+        //p.rgba(255, 0, 0)
+      }
+    }
+    
+    canvasSrc2d.putImageData(sourceData, 0, 0)
 
   } else {
     console.error('nope')
