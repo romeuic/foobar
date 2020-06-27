@@ -25,6 +25,8 @@ sourceDropBtn.onmouseenter = getSources
 
 const sourceDropList = document.querySelector('#sourceDrop>ul')
 
+const barsTracker = document.getElementById('barsTracker')
+const barsNodes = document.querySelectorAll('#barsTracker>div')
 const priceIndex = document.getElementById('priceIndex')
 let price = 0
 
@@ -133,25 +135,72 @@ function updateCrop(direction) {
       }
     }
 
-    // removes unnecessary info and track bars positions
+    // hides background info and tracks bars x positions
     let lastIsVoid = false
+    let track = {
+      top: null,
+      bottom: null,
+      bar: {
+        width: 0,
+        height: 0 },
+      gaps: [],
+    }
     for (let x = width - 1; x >= 0; x--) { //-all-columns
       let isVoid = true
 
       for (let y = 0; y < height; y++) { //-all-lines
         const p = getPixel(x, y)
-        if (p.r < 120 && p.g < 120) p.rgba(0, 0, 0)
+        if (p.r < 100 && p.g < 100) p.rgba(null, null, null, 0)
         else if (isVoid) isVoid = false
       }
 
       if (isVoid) {
-        if (lastIsVoid) getPixel(x, 0).rgba(64, 64, 64)
-        else getPixel(x, 0).rgba(168, 192, 255)
+        if (!lastIsVoid) track.gaps.push(x)
         lastIsVoid = true
       } else if (lastIsVoid) {
-        getPixel(x, 0).rgba(255, 128, 64)
+        track.gaps.push(x + 1)
         lastIsVoid = false
       }
+    }
+
+    // traks bars y positions
+    for (let y = 0; y < height; y++) { //-all-lines
+      let found = false
+      for (let x = track.gaps[6]; x < track.gaps[1]; x++) { //-bars-columns
+        const p = getPixel(x, y)
+        if (p.a !== 0) {
+          found = true
+          break
+        }
+      }
+      if (found) if (track.top === null) track.top = y - 1
+      else if(track.top !== null) track.bottom = y 
+    }
+    track.bar.width = (
+        (track.gaps[1] - track.gaps[2])
+        + (track.gaps[3] - track.gaps[4])
+        + (track.gaps[5] - track.gaps[6])
+    ) / 3
+    track.bar.height = track.bottom - track.top + 2
+
+    // updates tracker monitor
+    if (track.gaps.length > 6) {
+      barsTracker.style.left = `${track.gaps[6]}px`
+      barsTracker.style.top = `${track.top}px`
+      barsTracker.style.height = `${track.bar.height}px`
+
+      barsNodes[0].style.width = `${track.gaps[5] - track.gaps[6]}px`
+      barsNodes[0].style.marginRight = `${track.gaps[4] - track.gaps[5]}px`
+
+      barsNodes[1].style.width = `${track.gaps[3] - track.gaps[4]}px`
+      barsNodes[1].style.marginRight = `${track.gaps[2] - track.gaps[3]}px`
+
+      barsNodes[2].style.width = `${track.gaps[1] - track.gaps[2]}px`
+      barsNodes[2].style.marginRight = `${track.gaps[0] - track.gaps[1]}px`
+
+      barsNodes[3].style.width = `${track.bar.width}px`
+      barsNodes[3].style.marginTop = `-${track.bar.height / 4}px`
+      barsNodes[3].style.height = `${track.bar.height * 1.5}px`
     }
 
     priceIndex.style.top = `${price}px`
