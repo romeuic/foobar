@@ -156,3 +156,13 @@ img {
   width: 100%;
   opacity: .666;
 }
+
+#priceIndex {
+  height: 1px;
+  left: 0;
+  right: 0;
+  position: absolute;
+  display: block;
+  background-color: #ac5509;
+  opacity: .666;
+}

@@ -25,6 +25,9 @@ sourceDropBtn.onmouseenter = getSources
 
 const sourceDropList = document.querySelector('#sourceDrop>ul')
 
+const priceIndex = document.getElementById('priceIndex')
+let price = 0
+
 let offset = {
   top: -window.screenTop,
   left: -window.screenLeft,
@@ -121,13 +124,49 @@ function updateCrop(direction) {
       }
     }
 
-    for (let y = 0; y < height; y++) { //lines
-      for (let x = 0; x < width; x++) { //columns
-        const p = getPixel(x, y)
-        //p.rgba(255, 0, 0)
+    // finds and updates price x value
+    for (let y = 0; y < height; y++) { //-all-lines
+      const p = getPixel(width - 1, y) //-last-column
+      if (p.r > 120 && p.r < 160) {
+        price = y
+        break
       }
     }
-    
+
+    // removes unnecessary info and track bars positions
+    let lastIsVoid = false
+    for (let x = width - 1; x >= 0; x--) { //-all-columns
+      let isVoid = true
+
+      for (let y = 0; y < height; y++) { //-all-lines
+        const p = getPixel(x, y)
+        if (p.r < 120 && p.g < 120) p.rgba(0, 0, 0)
+        else if (isVoid) isVoid = false
+      }
+
+      if (isVoid) {
+        if (lastIsVoid) getPixel(x, 0).rgba(64, 64, 64)
+        else getPixel(x, 0).rgba(168, 192, 255)
+        lastIsVoid = true
+      } else if (lastIsVoid) {
+        getPixel(x, 0).rgba(255, 128, 64)
+        lastIsVoid = false
+      }
+    }
+
+    priceIndex.style.top = `${price}px`
+
+    // to be continued
+
+    //for (let y = 0; y < height; y++) { //lines
+    //  for (let x = 0; x < width; x++) { //columns
+    //    const p = getPixel(x, y)
+    //    if (x > width -10 && p.r > 100) {
+    //      //setPriceIndex(y)
+    //    }
+    //  }
+    //}
+
     canvasSrc2d.putImageData(sourceData, 0, 0)
 
   } else {
@@ -233,6 +272,6 @@ function tick() {
       updateCrop()
     }
     tick()
-  }, 1000)
+  }, 333)
 }
 tick()
