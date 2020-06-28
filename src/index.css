@@ -207,7 +207,7 @@ img {
 #finishLine {
   width: 1px;
   top: 0;
-  /* bottom: 0; */ height: 32px;
+  bottom: 0;
   background-color: #db4931;
 }
 

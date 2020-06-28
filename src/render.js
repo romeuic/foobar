@@ -177,39 +177,6 @@ function updateCrop(direction) {
     const rgbaLog = p => console.log({ r: p.r, g: p.g, b: p.b, a: p.a })
     let found
 
-    // finds and updates buyend-line x value
-    buyendLine.style.left = `${width}px` //todo: end this track
-
-    // finds and updates finish-line x value
-    found = false
-    for (let x = width; x > 0 ; x--) {
-      const p = getPixel(x, 0) //-first-row
-      if (p.r > 80 && p.b < 80) {
-        finish = x
-        found = true
-        break
-      }
-    }
-    for (let y = 0; y < height; y++) {
-      for (let i = -1; i < 5; i++) {
-        const p = getPixel(finish - i, y)
-        p.rgba(null, null, null, 0)
-      }
-    }
-    finishLine.style.left = `${found ? finish - 1 : width}px`
-
-    // finds and updates price y value
-    found = false
-    for (let y = 0; y < height; y++) { //-all-lines
-      const p = getPixel(width - 1, y) //-last-column
-      if (p.r > 60 && p.b < 60) {
-        price = y
-        found = true
-        break
-      }
-    }
-    priceIndex.style.top = `${found && finish < width ? price : height}px`
-
     // hides background info and tracks bars x positions
     let lastIsVoid = false
     let isVoid
@@ -237,6 +204,55 @@ function updateCrop(direction) {
         lastIsVoid = false
       }
     }
+
+    // finds and updates buyend-line x value
+    buyendLine.style.left = `${width}px` //todo: end this track
+
+    // finds and updates finish-line x value
+    let size = 0
+    found = false
+    for (let x = width; x > 0 ; x--) {
+      const p = getPixel(x, 0) //-first-row
+      if (p.a > 0) {
+        finish = x
+        found = true
+        size++
+      } else if (found) {
+        if (size > 2) finish++ 
+        break
+      }
+    }
+    for (let y = 0; y < height; y++) {
+      const pl1 = getPixel(finish - 1, y) //-left-pixel
+      const pl2 = getPixel(finish - 2, y) //-left-most-pixel
+      if (pl2.a === 0 || pl1.a === 0) {
+        for (let i = 0; i < 3; i++) {
+          const p = getPixel(finish - i, y)
+          p.rgba(null, null, null, 0)
+        }
+      }
+      const pr1 = getPixel(finish + 2, y) //-right-pixel
+      const pr2 = getPixel(finish + 3, y) //-right-most-pixel
+      if (pr2.a === 0 || pr1.a === 0) {
+        for (let i = 1; i < 4; i++) {
+          const p = getPixel(finish + i, y)
+          p.rgba(null, null, null, 0)
+        }
+      }
+    }
+    finishLine.style.left = `${found ? finish : width}px`
+
+    // finds and updates price y value
+    found = false
+    for (let y = 0; y < height; y++) { //-all-lines
+      const p = getPixel(width - 1, y) //-last-column
+      if (p.r > 60 && p.b < 60) {
+        price = y
+        found = true
+        break
+      }
+    }
+    priceIndex.style.top = `${found && finish < width ? price : height}px`
 
     // traks bars y positions
     for (let y = 0; y < height; y++) { //-all-lines
