@@ -23,6 +23,28 @@ const updateBarIndex = (direction) => {
   }
 }
 
+let d = []
+let height = 0
+let width = 0
+
+const getPixel = (x, y) => {
+  const i = y * width * 4 + x * 4
+  const [ir, ig, ib, ia] = [i, i + 1, i + 2, i + 3]
+  return {
+    i,
+    rgba: (r = null, g = null, b = null, a = null) => {
+      if (r !== null) data[ir] = r
+      if (g !== null) data[ig] = g
+      if (b !== null) data[ib] = b
+      if (a !== null) data[ia] = a
+    },
+    r: data[ir],
+    g: data[ig],
+    b: data[ib],
+    a: data[ia],
+  }
+}
+
 // sets video and initial attributes
 const video = document.querySelector('video')
 video.onloadedmetadata = () => video.play()
@@ -67,7 +89,10 @@ barsTracker.appendChild(divs(3, 12))
 barsTracker.appendChild(divs(3, 18))
 
 const barsNodes = document.querySelectorAll('#barsTracker>div')
+const buyendLine = document.getElementById('buyendLine')
+const finishLine = document.getElementById('finishLine')
 const priceIndex = document.getElementById('priceIndex')
+let finish = 0
 let price = 0
 
 let offset = {
@@ -144,39 +169,50 @@ function updateCrop(direction) {
 
     sourceData = canvasSrc2d.getImageData(0, 0, crop.width, crop.height)
 
-    let d = sourceData.data
-    let height = sourceData.height
-    let width = sourceData.width
+    // declarar global
+    data = sourceData.data
+    height = sourceData.height
+    width = sourceData.width
 
-    const getPixel = (x, y) => {
-      const i = y * width * 4 + x * 4
-      const [ir, ig, ib, ia] = [i, i + 1, i + 2, i + 3]
-      return {
-        i,
-        rgba: (r = null, g = null, b = null, a = null) => {
-          if (r !== null) d[ir] = r
-          if (g !== null) d[ig] = g
-          if (b !== null) d[ib] = b
-          if (a !== null) d[ia] = a
-        },
-        r: d[ir],
-        g: d[ig],
-        b: d[ib],
-        a: d[ia],
-      }
-    }
+    const rgbaLog = p => console.log({ r: p.r, g: p.g, b: p.b, a: p.a })
+    let found
 
-    // finds and updates price x value
-    for (let y = 0; y < height; y++) { //-all-lines
-      const p = getPixel(width - 1, y) //-last-column
-      if (p.r > 120 && p.r < 160) {
-        price = y
+    // finds and updates buyend-line x value
+    buyendLine.style.left = `${width}px` //todo: end this track
+
+    // finds and updates finish-line x value
+    found = false
+    for (let x = width; x > 0 ; x--) {
+      const p = getPixel(x, 0) //-first-row
+      if (p.r > 80 && p.b < 80) {
+        finish = x
+        found = true
         break
       }
     }
+    for (let y = 0; y < height; y++) {
+      for (let i = -1; i < 5; i++) {
+        const p = getPixel(finish - i, y)
+        p.rgba(null, null, null, 0)
+      }
+    }
+    finishLine.style.left = `${found ? finish - 1 : width}px`
+
+    // finds and updates price y value
+    found = false
+    for (let y = 0; y < height; y++) { //-all-lines
+      const p = getPixel(width - 1, y) //-last-column
+      if (p.r > 60 && p.b < 60) {
+        price = y
+        found = true
+        break
+      }
+    }
+    priceIndex.style.top = `${found && finish < width ? price : height}px`
 
     // hides background info and tracks bars x positions
     let lastIsVoid = false
+    let isVoid
     track = {
       top: null,
       bottom: null,
@@ -184,12 +220,13 @@ function updateCrop(direction) {
       gaps: [],
     }
     for (let x = width - 1; x >= 0; x--) { //-all-columns
-      let isVoid = true
-
+      isVoid = true
       for (let y = 0; y < height; y++) { //-all-lines
         const p = getPixel(x, y)
-        if (p.r < 100 && p.g < 100) p.rgba(null, null, null, 0)
-        else if (isVoid) isVoid = false
+        if (p.r < 120 && p.g < 120 && p.b < 100) //b113
+          p.rgba(null, null, null, 0)
+        else if (isVoid)
+          isVoid = false
       }
 
       if (isVoid) {
@@ -203,7 +240,7 @@ function updateCrop(direction) {
 
     // traks bars y positions
     for (let y = 0; y < height; y++) { //-all-lines
-      let found = false
+      found = false
       for (let x = gap(6); x < gap(1); x++) { //-bars-columns
         const p = getPixel(x, y)
         if (p.a !== 0) {
@@ -236,8 +273,6 @@ function updateCrop(direction) {
       barsNodes[3].style.marginTop = `-${track.bar.height / 4}px`
       barsNodes[3].style.height = `${track.bar.height * 1.5}px`
     }
-
-    priceIndex.style.top = `${price}px`
 
     // to be continued
 

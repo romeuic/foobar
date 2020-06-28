@@ -189,12 +189,31 @@ img {
   flex: 1;
 }
 
+#buyendLine,
+#finishLine,
+#priceIndex {
+  position: absolute;
+  display: block;
+  opacity: .666;
+}
+
+#buyendLine {
+  width: 1px;
+  top: 0;
+  /* bottom: 0; */ height: 32px;
+  background-color: #fff;
+}
+
+#finishLine {
+  width: 1px;
+  top: 0;
+  /* bottom: 0; */ height: 32px;
+  background-color: #db4931;
+}
+
 #priceIndex {
   height: 1px;
   left: 0;
-  right: 0;
-  position: absolute;
-  display: block;
+  /* right: 0; */ width: 32px;
   background-color: #ac5509;
-  opacity: .666;
 }
