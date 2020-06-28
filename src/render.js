@@ -1,28 +1,50 @@
 const { desktopCapturer, remote } = require('electron')
 
+// sets globals
 const currentWindow = remote.getCurrentWindow()
 let cursor = { isDown: false, from: { x: null, y: null } }
+let currentSource = { name: null }
+let barIndex = 0
+let track = { gaps: [] }
+const gap = i => track.gaps[i + barIndex]
 
+const updateBarIndex = (direction) => {
+  switch (direction) {
+    case 'left':
+      if (track.gaps.length > barIndex + 8) {
+        barIndex += 2
+      }
+      break
+    case 'right':
+      if (barIndex - 2 >= 0) {
+        barIndex -= 2
+      }
+      break
+  }
+}
+
+// sets video and initial attributes
 const video = document.querySelector('video')
 video.onloadedmetadata = () => video.play()
 video.onmousedown = videoDragStart
 video.onmousemove = videoDragging
 video.onmouseup = videoDragEnd
 
+// sets canvas and gets context
 const canvasSrc = document.querySelector('canvas')
 const canvasSrc2d = canvasSrc.getContext('2d')
 let sourceData = null
 
+// sets feedback image
 const img = document.querySelector('img')
 
+// blocks monitor ondrag event
 const monitor = document.getElementById('monitor')
 monitor.ondragover = e => e.preventDefault()
 
-let currentSource = { name: null }
-
+// sets source drop button and list
 const sourceDropBtn = document.querySelector('#sourceDrop>.btn')
 sourceDropBtn.onmouseenter = getSources
-
 const sourceDropList = document.querySelector('#sourceDrop>ul')
 
 // building tracker structure
@@ -155,12 +177,10 @@ function updateCrop(direction) {
 
     // hides background info and tracks bars x positions
     let lastIsVoid = false
-    let track = {
+    track = {
       top: null,
       bottom: null,
-      bar: {
-        width: 0,
-        height: 0 },
+      bar: { width: 0, height: 0 },
       gaps: [],
     }
     for (let x = width - 1; x >= 0; x--) { //-all-columns
@@ -184,7 +204,7 @@ function updateCrop(direction) {
     // traks bars y positions
     for (let y = 0; y < height; y++) { //-all-lines
       let found = false
-      for (let x = track.gaps[6]; x < track.gaps[1]; x++) { //-bars-columns
+      for (let x = gap(6); x < gap(1); x++) { //-bars-columns
         const p = getPixel(x, y)
         if (p.a !== 0) {
           found = true
@@ -194,27 +214,23 @@ function updateCrop(direction) {
       if (found) if (track.top === null) track.top = y - 1
       else if(track.top !== null) track.bottom = y 
     }
-    track.bar.width = (
-        (track.gaps[1] - track.gaps[2])
-        + (track.gaps[3] - track.gaps[4])
-        + (track.gaps[5] - track.gaps[6])
-    ) / 3
+    track.bar.width = ((gap(1) - gap(2)) + (gap(3) - gap(4)) + (gap(5) - gap(6))) / 3
     track.bar.height = track.bottom - track.top + 2
 
     // updates tracker monitor
-    if (track.gaps.length > 6) {
-      barsTracker.style.left = `${track.gaps[6]}px`
+    if (track.gaps.length >= barIndex + 6) {
+      barsTracker.style.left = `${gap(6)}px`
       barsTracker.style.top = `${track.top}px`
       barsTracker.style.height = `${track.bar.height}px`
 
-      barsNodes[0].style.width = `${track.gaps[5] - track.gaps[6]}px`
-      barsNodes[0].style.marginRight = `${track.gaps[4] - track.gaps[5]}px`
+      barsNodes[0].style.width = `${gap(5) - gap(6)}px`
+      barsNodes[0].style.marginRight = `${gap(4) - gap(5)}px`
 
-      barsNodes[1].style.width = `${track.gaps[3] - track.gaps[4]}px`
-      barsNodes[1].style.marginRight = `${track.gaps[2] - track.gaps[3]}px`
+      barsNodes[1].style.width = `${gap(3) - gap(4)}px`
+      barsNodes[1].style.marginRight = `${gap(2) - gap(3)}px`
 
-      barsNodes[2].style.width = `${track.gaps[1] - track.gaps[2]}px`
-      barsNodes[2].style.marginRight = `${track.gaps[0] - track.gaps[1]}px`
+      barsNodes[2].style.width = `${gap(1) - gap(2)}px`
+      barsNodes[2].style.marginRight = `${gap(0) - gap(1)}px`
 
       barsNodes[3].style.width = `${track.bar.width}px`
       barsNodes[3].style.marginTop = `-${track.bar.height / 4}px`
@@ -241,6 +257,7 @@ function updateCrop(direction) {
   }
 }
 
+// sets keyboard interaction
 window.onkeydown = e => {
   if (e.ctrlKey) {
     switch (e.keyCode) {
@@ -253,6 +270,13 @@ window.onkeydown = e => {
     }
     video.classList.add('canDrag')
     canvasSrc.style.opacity = 0
+  } else {
+    switch (e.keyCode) {
+      case 37: updateBarIndex('left'); break //left
+      //case 38: updateCrop('up'); break //up
+      case 39: updateBarIndex('right'); break //right
+      //case 40: updateCrop('down'); break //down
+    }
   }
 }
 
@@ -288,6 +312,7 @@ async function getSources() {
 // Change the source window to record
 async function selectSource(src) {
 
+  barIndex = 0
   offset.top = -window.screenTop
   offset.left = -window.screenLeft
   updateCrop()
