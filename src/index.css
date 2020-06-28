@@ -200,8 +200,9 @@ img {
 #buyendLine {
   width: 1px;
   top: 0;
-  /* bottom: 0; */ height: 32px;
+  bottom: 0;
   background-color: #fff;
+  opacity: .333;
 }
 
 #finishLine {
@@ -214,6 +215,6 @@ img {
 #priceIndex {
   height: 1px;
   left: 0;
-  /* right: 0; */ width: 32px;
+  right: 0;
   background-color: #ac5509;
 }

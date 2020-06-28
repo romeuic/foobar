@@ -45,6 +45,8 @@ const getPixel = (x, y) => {
   }
 }
 
+const rgbaLog = p => console.log({ r: p.r, g: p.g, b: p.b, a: p.a })
+
 // sets video and initial attributes
 const video = document.querySelector('video')
 video.onloadedmetadata = () => video.play()
@@ -92,6 +94,7 @@ const barsNodes = document.querySelectorAll('#barsTracker>div')
 const buyendLine = document.getElementById('buyendLine')
 const finishLine = document.getElementById('finishLine')
 const priceIndex = document.getElementById('priceIndex')
+let buyend = 0
 let finish = 0
 let price = 0
 
@@ -136,13 +139,7 @@ function videoDragging(e) {
 }
 
 function updateCrop(direction) {
-
-  switch (direction) {
-    case 'left': offset.left++; break
-    case 'up': offset.top++; break
-    case 'right': offset.left--; break
-    case 'down': offset.top--; break
-  }
+  console.time('updateCrop')
 
   crop = {
     left: offset.left + window.screenLeft,
@@ -169,46 +166,49 @@ function updateCrop(direction) {
 
     sourceData = canvasSrc2d.getImageData(0, 0, crop.width, crop.height)
 
-    // declarar global
     data = sourceData.data
     height = sourceData.height
     width = sourceData.width
 
-    const rgbaLog = p => console.log({ r: p.r, g: p.g, b: p.b, a: p.a })
-    let found
-
-    // hides background info and tracks bars x positions
-    let lastIsVoid = false
-    let isVoid
-    track = {
-      top: null,
-      bottom: null,
-      bar: { width: 0, height: 0 },
-      gaps: [],
-    }
-    for (let x = width - 1; x >= 0; x--) { //-all-columns
-      isVoid = true
+    // hides background info
+    for (let x = 0; x < width; x++) { //-all-columns
       for (let y = 0; y < height; y++) { //-all-lines
         const p = getPixel(x, y)
-        if (p.r < 120 && p.g < 120 && p.b < 100) //b113
+        if (p.r < 120 && p.g < 120 && p.b < 100) {
           p.rgba(null, null, null, 0)
-        else if (isVoid)
-          isVoid = false
-      }
-
-      if (isVoid) {
-        if (!lastIsVoid) track.gaps.push(x)
-        lastIsVoid = true
-      } else if (lastIsVoid) {
-        track.gaps.push(x + 1)
-        lastIsVoid = false
+        }
       }
     }
 
-    // finds and updates buyend-line x value
-    buyendLine.style.left = `${width}px` //todo: end this track
+    // finds buyend-line x value and erase it
+    let found = false
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width ; x++) {
+        const p = getPixel(x, y)
+        if (p.r > 200 && p.g > 200 && p.b > 200) {
+          found = true
+          buyend = x
+          break
+        }
+      }
+    }
+    if (found) {
+      for (let y = 0; y < height; y++) {
+        // check left border for transparent pixels
+        if (getPixel(buyend - 1, y).a === 0) {
+          getPixel(buyend, y).rgba(null, null, null, 0)
+        }
+        // check right border for transparent pixels
+        if (getPixel(buyend + 2, y).a === 0) {
+          getPixel(buyend + 1, y).rgba(null, null, null, 0)
+        }
+      }
+      buyendLine.style.left = `${buyend}px`
+    } else {
+      buyendLine.style.left = `${width}px`
+    }
 
-    // finds and updates finish-line x value
+    // finds finish-line x value and erase it
     let size = 0
     found = false
     for (let x = width; x > 0 ; x--) {
@@ -222,25 +222,25 @@ function updateCrop(direction) {
         break
       }
     }
-    for (let y = 0; y < height; y++) {
-      const pl1 = getPixel(finish - 1, y) //-left-pixel
-      const pl2 = getPixel(finish - 2, y) //-left-most-pixel
-      if (pl2.a === 0 || pl1.a === 0) {
-        for (let i = 0; i < 3; i++) {
-          const p = getPixel(finish - i, y)
-          p.rgba(null, null, null, 0)
+    if (found) {
+      for (let y = 0; y < height; y++) {
+        // check left border for transparent pixels
+        if (getPixel(finish - 2, y).a === 0 || getPixel(finish - 1, y).a === 0) {
+          getPixel(finish, y).rgba(null, null, null, 0)
+          getPixel(finish - 1, y).rgba(null, null, null, 0)
+          getPixel(finish - 2, y).rgba(null, null, null, 0)
+        }
+        // check right border for transparent pixels
+        if (getPixel(finish + 3, y).a === 0 || getPixel(finish + 2, y).a === 0) {
+          getPixel(finish + 1, y).rgba(null, null, null, 0)
+          getPixel(finish + 2, y).rgba(null, null, null, 0)
+          getPixel(finish + 3, y).rgba(null, null, null, 0)
         }
       }
-      const pr1 = getPixel(finish + 2, y) //-right-pixel
-      const pr2 = getPixel(finish + 3, y) //-right-most-pixel
-      if (pr2.a === 0 || pr1.a === 0) {
-        for (let i = 1; i < 4; i++) {
-          const p = getPixel(finish + i, y)
-          p.rgba(null, null, null, 0)
-        }
-      }
+      finishLine.style.left = `${finish}px`
+    } else {
+      finishLine.style.left = `${width}px`
     }
-    finishLine.style.left = `${found ? finish : width}px`
 
     // finds and updates price y value
     found = false
@@ -252,7 +252,42 @@ function updateCrop(direction) {
         break
       }
     }
-    priceIndex.style.top = `${found && finish < width ? price : height}px`
+    if (found) {
+      for (let x = width - 1; x > 0; x--) {
+        if (getPixel(x, price - 1).a === 0 && getPixel(x, price + 1).a === 0)
+          getPixel(x, price).rgba(null, null, null, 0)
+        else break
+      }
+      priceIndex.style.top = `${finish < width ? price : height}px`
+    } else {
+      priceIndex.style.top = `${height}px`
+    }
+
+    // tracks bars x positions
+    let lastIsVoid = false
+    let isVoid
+    track = {
+      top: null,
+      bottom: null,
+      bar: { width: 0, height: 0 },
+      gaps: [],
+    }
+    for (let x = width - 1; x >= 0; x--) { //-all-columns
+      isVoid = true
+
+      for (let y = 0; y < height; y++) { //-all-lines
+        const p = getPixel(x, y)
+        if (p.a !== 0 && isVoid) isVoid = false 
+      }
+
+      if (isVoid) {
+        if (!lastIsVoid) track.gaps.push(x)
+        lastIsVoid = true
+      } else if (lastIsVoid) {
+        track.gaps.push(x + 1)
+        lastIsVoid = false
+      }
+    }
 
     // traks bars y positions
     for (let y = 0; y < height; y++) { //-all-lines
@@ -283,41 +318,31 @@ function updateCrop(direction) {
       barsNodes[1].style.marginRight = `${gap(2) - gap(3)}px`
 
       barsNodes[2].style.width = `${gap(1) - gap(2)}px`
-      barsNodes[2].style.marginRight = `${gap(0) - gap(1)}px`
+      barsNodes[2].style.marginRight = `${((gap(2) - gap(3)) + (gap(4) - gap(5))) / 2}px`
 
       barsNodes[3].style.width = `${track.bar.width}px`
       barsNodes[3].style.marginTop = `-${track.bar.height / 4}px`
       barsNodes[3].style.height = `${track.bar.height * 1.5}px`
     }
 
-    // to be continued
-
-    //for (let y = 0; y < height; y++) { //lines
-    //  for (let x = 0; x < width; x++) { //columns
-    //    const p = getPixel(x, y)
-    //    if (x > width -10 && p.r > 100) {
-    //      //setPriceIndex(y)
-    //    }
-    //  }
-    //}
+    // to be continued... ^_^
 
     canvasSrc2d.putImageData(sourceData, 0, 0)
 
   } else {
     console.error('nope')
   }
+  console.timeEnd('updateCrop')
 }
 
 // sets keyboard interaction
 window.onkeydown = e => {
   if (e.ctrlKey) {
     switch (e.keyCode) {
-      case 37: updateCrop('left'); break //left
-      case 38: updateCrop('up'); break //up
-      case 39: updateCrop('right'); break //right
-      case 40: updateCrop('down'); break //down
-      //case 32: updateCrop(); break //space
-      //case 13: foobar(); break //enter
+      case 37: offset.left++; updateCrop(); break //left
+      case 38: offset.top++; updateCrop(); break //up
+      case 39: offset.left--; updateCrop(); break //right
+      case 40: offset.top--; updateCrop(); break //down
     }
     video.classList.add('canDrag')
     canvasSrc.style.opacity = 0
