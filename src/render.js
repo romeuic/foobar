@@ -25,7 +25,25 @@ sourceDropBtn.onmouseenter = getSources
 
 const sourceDropList = document.querySelector('#sourceDrop>ul')
 
+// building tracker structure
 const barsTracker = document.getElementById('barsTracker')
+const div = () => document.createElement('div')
+const divs = (cols, rows) => {
+  const d = div()
+  for (let i = 0; i < cols; i++) {
+    const c = div()
+    for (let j = 0; j < rows; j++) {
+      c.appendChild(div())
+    }
+    d.appendChild(c)
+  }
+  return d
+}
+barsTracker.appendChild(divs(3, 12))
+barsTracker.appendChild(divs(3, 12))
+barsTracker.appendChild(divs(3, 12))
+barsTracker.appendChild(divs(3, 18))
+
 const barsNodes = document.querySelectorAll('#barsTracker>div')
 const priceIndex = document.getElementById('priceIndex')
 let price = 0

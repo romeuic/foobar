@@ -171,12 +171,21 @@ img {
   height: 100%;
   border: 1px solid #fff;
   border-right: 0;
+  border-bottom: 0;
   display: flex;
 }
 
 #barsTracker>div>div {
   height: 100%;
   border-right: 1px solid #fff;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+#barsTracker>div>div>div {
+  width: 100%;
+  border-bottom: 1px solid #fff;
   flex: 1;
 }
 
