@@ -32,19 +32,24 @@ const sourceDropList = document.querySelector('#sourceDrop>ul')
 // builds tracker structure
 const barsTracker = document.getElementById('barsTracker')
 const newDiv = () => document.createElement('div')
+const pArr = []
 
-const buildDivGroups = (node, amount, cols, rows) => {
+const buildDivGroups = (node, amount, cols, rows, arr = []) => {
   const last = amount - 1
 
   for (let i = 0; i < amount; i++) {
     const g = newDiv()
     const h = (i < last ? rows : rows * 1.5)
+    arr.push([])
 
     for (let j = 0; j < cols; j++) {
       const c = newDiv()
+      arr[i].push([])
 
       for (let k = 0; k < h; k++) {
         const r = newDiv()
+        arr[i][j].push(r)
+        if (arr) arr[i][j][k] = r
         c.appendChild(r)
       }
       g.appendChild(c)
@@ -52,7 +57,7 @@ const buildDivGroups = (node, amount, cols, rows) => {
     node.appendChild(g)
   }
 }
-buildDivGroups(barsTracker, 4, 3, 12)
+buildDivGroups(barsTracker, 4, 3, 12, pArr)
 
 // sets other monitor structures
 const barsNodes = document.querySelectorAll('#barsTracker>div')
@@ -92,6 +97,39 @@ const getPixel = (x, y) => {
     b: data[ib],
     a: data[ia],
   }
+}
+
+const findY = (x, y0, y1) => {
+  let top = null
+  let bottom = null
+  for (let i = y0; i < y1; i++) {
+    if (getPixel(x, i).a > 0) {
+      if (top === null) top = i
+      else bottom = i
+    }
+    else if (bottom !== null) break
+  }
+  return  Math.round((top + bottom) * 0.5)
+}
+
+const getReading = arr => {
+  const bars = []
+  for (let i = 0; i < arr.length - 1; i++) {
+    const b = []
+    for (let j = 0; j < arr[i].length; j++) {
+      const dTop = arr[i][j][0]
+      const dBot = arr[i][j][arr[i][j].length - 1]
+      const x = dTop.offsetLeft + dTop.offsetWidth * 0.5 + barsTracker.offsetLeft
+      const yIni = dTop.offsetTop + barsTracker.offsetTop
+      const yEnd = dBot.offsetTop + dBot.offsetHeight + barsTracker.offsetTop
+
+      const y = findY(x, yIni, yEnd)
+      getPixel(x, y).rgba(255, 255, 255, 255)
+      // to be continued...
+    }
+    bars.push(b)
+  }
+  return bars
 }
 
 // for debugging reasons
@@ -302,6 +340,7 @@ function updateCrop(direction) {
     }
 
     // to be continued... ^_^
+    const barGroup = getReading(pArr)
 
     canvasSrc2d.putImageData(sourceData, 0, 0)
 
