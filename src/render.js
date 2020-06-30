@@ -4,48 +4,6 @@ const { desktopCapturer, remote } = require('electron')
 const currentWindow = remote.getCurrentWindow()
 let cursor = { isDown: false, from: { x: null, y: null } }
 let currentSource = { name: null }
-let barIndex = 0
-let track = { gaps: [] }
-const gap = i => track.gaps[i + barIndex]
-
-const updateBarIndex = (direction) => {
-  switch (direction) {
-    case 'left':
-      if (track.gaps.length > barIndex + 8) {
-        barIndex += 2
-      }
-      break
-    case 'right':
-      if (barIndex - 2 >= 0) {
-        barIndex -= 2
-      }
-      break
-  }
-}
-
-let d = []
-let height = 0
-let width = 0
-
-const getPixel = (x, y) => {
-  const i = y * width * 4 + x * 4
-  const [ir, ig, ib, ia] = [i, i + 1, i + 2, i + 3]
-  return {
-    i,
-    rgba: (r = null, g = null, b = null, a = null) => {
-      if (r !== null) data[ir] = r
-      if (g !== null) data[ig] = g
-      if (b !== null) data[ib] = b
-      if (a !== null) data[ia] = a
-    },
-    r: data[ir],
-    g: data[ig],
-    b: data[ib],
-    a: data[ia],
-  }
-}
-
-const rgbaLog = p => console.log({ r: p.r, g: p.g, b: p.b, a: p.a })
 
 // sets video and initial attributes
 const video = document.querySelector('video')
@@ -71,25 +29,32 @@ const sourceDropBtn = document.querySelector('#sourceDrop>.btn')
 sourceDropBtn.onmouseenter = getSources
 const sourceDropList = document.querySelector('#sourceDrop>ul')
 
-// building tracker structure
+// builds tracker structure
 const barsTracker = document.getElementById('barsTracker')
-const div = () => document.createElement('div')
-const divs = (cols, rows) => {
-  const d = div()
-  for (let i = 0; i < cols; i++) {
-    const c = div()
-    for (let j = 0; j < rows; j++) {
-      c.appendChild(div())
-    }
-    d.appendChild(c)
-  }
-  return d
-}
-barsTracker.appendChild(divs(3, 12))
-barsTracker.appendChild(divs(3, 12))
-barsTracker.appendChild(divs(3, 12))
-barsTracker.appendChild(divs(3, 18))
+const newDiv = () => document.createElement('div')
 
+const buildDivGroups = (node, amount, cols, rows) => {
+  const last = amount - 1
+
+  for (let i = 0; i < amount; i++) {
+    const g = newDiv()
+    const h = (i < last ? rows : rows * 1.5)
+
+    for (let j = 0; j < cols; j++) {
+      const c = newDiv()
+
+      for (let k = 0; k < h; k++) {
+        const r = newDiv()
+        c.appendChild(r)
+      }
+      g.appendChild(c)
+    }
+    node.appendChild(g)
+  }
+}
+buildDivGroups(barsTracker, 4, 3, 12)
+
+// sets other monitor structures
 const barsNodes = document.querySelectorAll('#barsTracker>div')
 const buyendLine = document.getElementById('buyendLine')
 const finishLine = document.getElementById('finishLine')
@@ -102,39 +67,48 @@ let offset = {
   top: -window.screenTop,
   left: -window.screenLeft,
 }
-
 let crop = {
   top: 0,
   left: 0,
-  width: monitor.offsetWidth,
-  height: monitor.offsetHeight,
 }
 
-function videoDragStart(e) {
-  cursor = {
-    isDown: true,
-    from: {
-      x: e.screenX,
-      y: e.screenY,
-    }
+let data = []
+let height = monitor.offsetWidth
+let width = monitor.offsetHeight
+
+const getPixel = (x, y) => {
+  const i = y * width * 4 + x * 4
+  const [ir, ig, ib, ia] = [i, i + 1, i + 2, i + 3]
+  return {
+    i,
+    rgba: (r = null, g = null, b = null, a = null) => {
+      if (r !== null) data[ir] = r
+      if (g !== null) data[ig] = g
+      if (b !== null) data[ib] = b
+      if (a !== null) data[ia] = a
+    },
+    r: data[ir],
+    g: data[ig],
+    b: data[ib],
+    a: data[ia],
   }
 }
 
-function videoDragEnd(e) {
-  cursor.isDown = false
-  if (e.ctrlKey) {
-    offset.left -= e.screenX - cursor.from.x
-    offset.top -= e.screenY - cursor.from.y
-    updateCrop()
-  }
-}
+// for debugging reasons
+const rgbaLog = p => console.log({ r: p.r, g: p.g, b: p.b, a: p.a })
 
-function videoDragging(e) {
-  if (e.ctrlKey && cursor.isDown) {
-    const moveX = e.screenX - cursor.from.x
-    const moveY = e.screenY - cursor.from.y
-    video.style.left = `${-crop.left + moveX}px`
-    video.style.top = `${-crop.top + moveY}px`
+let barIndex = 0
+let track = { gaps: [] }
+const gap = i => track.gaps[i + barIndex]
+
+const updateBarIndex = (direction) => {
+  switch (direction) {
+    case 'left':
+      if (track.gaps.length > barIndex + 8) barIndex += 2
+      break
+    case 'right':
+      if (barIndex - 2 >= 0) barIndex -= 2
+      break
   }
 }
 
@@ -144,36 +118,33 @@ function updateCrop(direction) {
   crop = {
     left: offset.left + window.screenLeft,
     top: offset.top + window.screenTop,
-    width: monitor.offsetWidth,
-    height: monitor.offsetHeight,
   }
+  width = monitor.offsetWidth
+  height = monitor.offsetHeight
 
   video.style.left = `${-crop.left}px`
   video.style.top = `${-crop.top}px`
-  canvasSrc.width = crop.width
-  canvasSrc.height = crop.height
+  canvasSrc.width = width
+  canvasSrc.height = height
 
   if (crop.left >= 0 && crop.top >= 0
-    && crop.left + crop.width <= video.offsetWidth
-    && crop.top + crop.height <= video.offsetHeight
+    && crop.left + width <= video.offsetWidth
+    && crop.top + height <= video.offsetHeight
   ) {
     canvasSrc2d.drawImage(
-      video,
-      crop.left, crop.top, crop.width, crop.height,
-      0, 0, crop.width, crop.height
+      video, crop.left, crop.top, width, height, 0, 0, width, height
     )
     img.setAttribute('src', canvasSrc.toDataURL('image/jpeg'))
 
-    sourceData = canvasSrc2d.getImageData(0, 0, crop.width, crop.height)
+    sourceData = canvasSrc2d.getImageData(0, 0, width, height)
 
     data = sourceData.data
-    height = sourceData.height
-    width = sourceData.width
 
     // hides background info
     for (let x = 0; x < width; x++) { //-all-columns
       for (let y = 0; y < height; y++) { //-all-lines
         const p = getPixel(x, y)
+
         if (p.r < 120 && p.g < 120 && p.b < 100) {
           p.rgba(null, null, null, 0)
         }
@@ -185,6 +156,7 @@ function updateCrop(direction) {
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width ; x++) {
         const p = getPixel(x, y)
+
         if (p.r > 200 && p.g > 200 && p.b > 200) {
           found = true
           buyend = x
@@ -204,20 +176,22 @@ function updateCrop(direction) {
         }
       }
       buyendLine.style.left = `${buyend}px`
-    } else {
-      buyendLine.style.left = `${width}px`
     }
+    else buyendLine.style.left = `${width}px`
+
 
     // finds finish-line x value and erase it
     let size = 0
     found = false
     for (let x = width; x > 0 ; x--) {
       const p = getPixel(x, 0) //-first-row
+
       if (p.a > 0) {
         finish = x
         found = true
         size++
-      } else if (found) {
+      }
+      else if (found) {
         if (size > 2) finish++ 
         break
       }
@@ -238,9 +212,8 @@ function updateCrop(direction) {
         }
       }
       finishLine.style.left = `${finish}px`
-    } else {
-      finishLine.style.left = `${width}px`
     }
+    else finishLine.style.left = `${width}px`
 
     // finds and updates price y value
     found = false
@@ -254,14 +227,16 @@ function updateCrop(direction) {
     }
     if (found) {
       for (let x = width - 1; x > 0; x--) {
-        if (getPixel(x, price - 1).a === 0 && getPixel(x, price + 1).a === 0)
+        if (getPixel(x, price - 2).a === 0 && getPixel(x, price + 2).a === 0) {
+          getPixel(x, price - 1).rgba(null, null, null, 0)
           getPixel(x, price).rgba(null, null, null, 0)
+          getPixel(x, price + 1).rgba(null, null, null, 0)
+        }
         else break
       }
       priceIndex.style.top = `${finish < width ? price : height}px`
-    } else {
-      priceIndex.style.top = `${height}px`
     }
+    else priceIndex.style.top = `${height}px`
 
     // tracks bars x positions
     let lastIsVoid = false
@@ -283,7 +258,8 @@ function updateCrop(direction) {
       if (isVoid) {
         if (!lastIsVoid) track.gaps.push(x)
         lastIsVoid = true
-      } else if (lastIsVoid) {
+      }
+      else if (lastIsVoid) {
         track.gaps.push(x + 1)
         lastIsVoid = false
       }
@@ -329,9 +305,9 @@ function updateCrop(direction) {
 
     canvasSrc2d.putImageData(sourceData, 0, 0)
 
-  } else {
-    console.error('nope')
   }
+  else console.error('nope')
+
   console.timeEnd('updateCrop')
 }
 
@@ -346,7 +322,8 @@ window.onkeydown = e => {
     }
     video.classList.add('canDrag')
     canvasSrc.style.opacity = 0
-  } else {
+  }
+  else {
     switch (e.keyCode) {
       case 37: updateBarIndex('left'); break //left
       //case 38: updateCrop('up'); break //up
@@ -414,7 +391,31 @@ async function selectSource(src) {
 }
 
 
-/* ------------------------ UI ------------------------ */
+/* =============================== UI =============================== */
+
+
+function videoDragStart(e) {
+  cursor = {
+    isDown: true,
+    from: { x: e.screenX, y: e.screenY }
+  }
+}
+
+function videoDragEnd(e) {
+  cursor.isDown = false
+  if (e.ctrlKey) {
+    offset.left -= e.screenX - cursor.from.x
+    offset.top -= e.screenY - cursor.from.y
+    updateCrop()
+  }
+}
+
+function videoDragging(e) {
+  if (e.ctrlKey && cursor.isDown) {
+    video.style.left = `${-crop.left + e.screenX - cursor.from.x}px`
+    video.style.top = `${-crop.top + e.screenY - cursor.from.y}px`
+  }
+}
 
 function addListener(selector, event, func) {
   const nodes = document.querySelectorAll(selector)
@@ -427,19 +428,17 @@ function addListener(selector, event, func) {
 addListener('#closeBtn', 'click', () => currentWindow.close())
 
 addListener('.drop.static', 'click', (e, drop) => {
-  if (drop.classList.contains('active')) {
-    drop.classList.remove('active')
-  } else {
-    drop.classList.add('active')
-  }
+  if (drop.classList.contains('active')) drop.classList.remove('active')
+  else drop.classList.add('active')
 })
 
 function tick() {
-  setTimeout(() => {
-    if (!video.classList.contains('canDrag')) {
-      updateCrop()
-    }
-    tick()
-  }, 333)
+  setTimeout(
+    () => {
+      if (!video.classList.contains('canDrag')) updateCrop()
+      tick()
+    },
+    333 // tick intervals (ms)
+  )
 }
 tick()
