@@ -32,17 +32,17 @@ const sourceDropList = document.querySelector('#sourceDrop>ul')
 // builds tracker structure
 const barsTracker = document.getElementById('barsTracker')
 const newDiv = () => document.createElement('div')
-const pArr = []
 
-const buildDivGroups = (node, amount, cols, rows, arr = []) => {
+const buildDivGroups = (node, amount, rows) => {
   const last = amount - 1
+  const arr = []
 
   for (let i = 0; i < amount; i++) {
     const g = newDiv()
     const h = (i < last ? rows : rows * 1.5)
     arr.push([])
 
-    for (let j = 0; j < cols; j++) {
+    for (let j = 0; j < 3; j++) { //columns
       const c = newDiv()
       arr[i].push([])
 
@@ -56,8 +56,11 @@ const buildDivGroups = (node, amount, cols, rows, arr = []) => {
     }
     node.appendChild(g)
   }
+  return arr
 }
-buildDivGroups(barsTracker, 4, 3, 12, pArr)
+
+// sets bars group array
+const pArr = buildDivGroups(barsTracker, 4, 12)
 
 // sets other monitor structures
 const barsNodes = document.querySelectorAll('#barsTracker>div')
@@ -100,7 +103,13 @@ const getPixel = (x, y) => {
 }
 
 
-const yToBinary = (column, x, y0, y1) => {
+const yToBinary = column => {
+  const dTop = column[0]
+  const dBot = column[column.length - 1]
+  const x = dTop.offsetLeft + dTop.offsetWidth * 0.5 + barsTracker.offsetLeft
+  const y0 = dTop.offsetTop + barsTracker.offsetTop
+  const y1 = dBot.offsetTop + dBot.offsetHeight + barsTracker.offsetTop
+
   let top = null
   let bottom = null
 
@@ -111,28 +120,36 @@ const yToBinary = (column, x, y0, y1) => {
     }
     else if (bottom !== null) break
   }
-  const y =  (top + bottom) * 0.5
+  const y =  Math.round((top + bottom) * 0.5)
   let bin = ''
 
   for (let i = 0; i < column.length; i++) {
     const row = column[i]
     const yIni = row.offsetTop + barsTracker.offsetTop
     const yEnd = yIni + row.offsetHeight
+
     if (yIni <= y && yEnd > y) bin += '1'
     else bin += '0'
   }
   return bin
 }
 
-const aToBinary = (column, x) => {
+const aToBinary = column => {
+  const dTop = column[0]
+  const x = dTop.offsetLeft + dTop.offsetWidth * 0.5 + barsTracker.offsetLeft
+
   let bin = ''
 
   for (let i = 0; i < column.length; i++) {
     const row = column[i]
-    const yIni = row.offsetTop + barsTracker.offsetTop
-    const yEnd = yIni + row.offsetHeight
+    let yIni = row.offsetTop + barsTracker.offsetTop
+    let yEnd = yIni + row.offsetHeight
+
+    if (yIni < 0) yIni = 0
+    if (yEnd > height) yEnd = height
 
     for (let j = yIni; j < yEnd; j++) {
+
       if (getPixel(x, j).a > 0) {
         bin += '1'
         break
@@ -145,21 +162,16 @@ const aToBinary = (column, x) => {
 
 const getReading = arr => {
   const bars = []
-  for (let i = 0; i < arr.length - 1; i++) {
-    const b = []
-    for (let j = 0; j < arr[i].length; j++) {
-      const dTop = arr[i][j][0]
-      const dBot = arr[i][j][arr[i][j].length - 1]
-      const x = dTop.offsetLeft + dTop.offsetWidth * 0.5 + barsTracker.offsetLeft
-      const yIni = dTop.offsetTop + barsTracker.offsetTop
-      const yEnd = dBot.offsetTop + dBot.offsetHeight + barsTracker.offsetTop
 
-      if (j === 1) b.push(aToBinary(arr[i][j], x, yIni, yEnd))
-      else b.push(yToBinary(arr[i][j], x, yIni, yEnd))
+  for (let i = 0; i < arr.length; i++) {
+    const b = []
+
+    for (let j = 0; j < arr[i].length; j++) {
+      if (j === 1) b.push(aToBinary(arr[i][j]))
+      else b.push(yToBinary(arr[i][j]))
     }
     bars.push(b)
   }
-  console.log(bars)
   return bars
 }
 
@@ -372,6 +384,7 @@ function updateCrop(direction) {
 
     // to be continued... ^_^
     const barGroup = getReading(pArr)
+    console.log(barGroup)
 
     canvasSrc2d.putImageData(sourceData, 0, 0)
 
