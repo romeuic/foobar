@@ -99,9 +99,11 @@ const getPixel = (x, y) => {
   }
 }
 
-const findY = (x, y0, y1) => {
+
+const yToBinary = (column, x, y0, y1) => {
   let top = null
   let bottom = null
+
   for (let i = y0; i < y1; i++) {
     if (getPixel(x, i).a > 0) {
       if (top === null) top = i
@@ -109,7 +111,36 @@ const findY = (x, y0, y1) => {
     }
     else if (bottom !== null) break
   }
-  return  Math.round((top + bottom) * 0.5)
+  const y =  (top + bottom) * 0.5
+  let bin = ''
+
+  for (let i = 0; i < column.length; i++) {
+    const row = column[i]
+    const yIni = row.offsetTop + barsTracker.offsetTop
+    const yEnd = yIni + row.offsetHeight
+    if (yIni <= y && yEnd > y) bin += '1'
+    else bin += '0'
+  }
+  return bin
+}
+
+const aToBinary = (column, x) => {
+  let bin = ''
+
+  for (let i = 0; i < column.length; i++) {
+    const row = column[i]
+    const yIni = row.offsetTop + barsTracker.offsetTop
+    const yEnd = yIni + row.offsetHeight
+
+    for (let j = yIni; j < yEnd; j++) {
+      if (getPixel(x, j).a > 0) {
+        bin += '1'
+        break
+      }
+    }
+    if (bin.length === i) bin += '0'
+  }
+  return bin
 }
 
 const getReading = arr => {
@@ -123,12 +154,12 @@ const getReading = arr => {
       const yIni = dTop.offsetTop + barsTracker.offsetTop
       const yEnd = dBot.offsetTop + dBot.offsetHeight + barsTracker.offsetTop
 
-      const y = findY(x, yIni, yEnd)
-      getPixel(x, y).rgba(255, 255, 255, 255)
-      // to be continued...
+      if (j === 1) b.push(aToBinary(arr[i][j], x, yIni, yEnd))
+      else b.push(yToBinary(arr[i][j], x, yIni, yEnd))
     }
     bars.push(b)
   }
+  console.log(bars)
   return bars
 }
 
@@ -151,7 +182,7 @@ const updateBarIndex = (direction) => {
 }
 
 function updateCrop(direction) {
-  console.time('updateCrop')
+  //console.time('updateCrop')
 
   crop = {
     left: offset.left + window.screenLeft,
@@ -347,7 +378,7 @@ function updateCrop(direction) {
   }
   else console.error('nope')
 
-  console.timeEnd('updateCrop')
+  //console.timeEnd('updateCrop')
 }
 
 // sets keyboard interaction
