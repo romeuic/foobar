@@ -382,9 +382,15 @@ function updateCrop(direction) {
       barsNodes[3].style.height = `${track.bar.height * 1.5}px`
     }
 
-    // to be continued... ^_^
     const barGroup = getReading(pArr)
-    console.log(barGroup)
+    //console.log({ pArr, barGroup })
+    for (let i = 0; i < barsNodes.length; i++) {
+      for (let j = 0; j < 3; j++) {
+        barsNodes[i].children[j].className = `b${barGroup[i][j]}`
+      }
+    }
+
+    // to be continued... ^_^
 
     canvasSrc2d.putImageData(sourceData, 0, 0)
 
@@ -521,7 +527,7 @@ function tick() {
       if (!video.classList.contains('canDrag')) updateCrop()
       tick()
     },
-    333 // tick intervals (ms)
+    1000 // tick intervals (ms)
   )
 }
 tick()

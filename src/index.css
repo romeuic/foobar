@@ -164,20 +164,22 @@ img {
   display: flex;
   flex-direction: row;
   pointer-events: none;
-  opacity: .1;
+  opacity: .333;
+}
+
+#barsTracker div {
+  border: 0 solid rgba(255, 255, 255, .333);
 }
 
 #barsTracker>div {
   height: 100%;
-  border: 1px solid #fff;
-  border-right: 0;
-  border-bottom: 0;
+  border-width: 1px 0 0 1px;
   display: flex;
 }
 
 #barsTracker>div>div {
   height: 100%;
-  border-right: 1px solid #fff;
+  border-right-width: 1px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -185,7 +187,7 @@ img {
 
 #barsTracker>div>div>div {
   width: 100%;
-  border-bottom: 1px solid #fff;
+  border-bottom-width: 1px;
   flex: 1;
 }
 
@@ -218,3 +220,285 @@ img {
   right: 0;
   background-color: #ac5509;
 }
+
+.b100000000000>div:nth-child(1),
+.b010000000000>div:nth-child(2),
+.b001000000000>div:nth-child(3),
+.b000100000000>div:nth-child(4),
+.b000010000000>div:nth-child(5),
+.b000001000000>div:nth-child(6),
+.b000000100000>div:nth-child(7),
+.b000000010000>div:nth-child(8),
+.b000000001000>div:nth-child(9),
+.b000000000100>div:nth-child(10),
+.b000000000010>div:nth-child(11),
+.b000000000001>div:nth-child(12),
+
+.b110000000000>div:nth-last-child(n+11),
+.b011000000000>div:nth-child(n+2):nth-last-child(n+10),
+.b001100000000>div:nth-child(n+3):nth-last-child(n+9),
+.b000110000000>div:nth-child(n+4):nth-last-child(n+8),
+.b000011000000>div:nth-child(n+5):nth-last-child(n+7),
+.b000001100000>div:nth-child(n+6):nth-last-child(n+6),
+.b000000110000>div:nth-child(n+7):nth-last-child(n+5),
+.b000000011000>div:nth-child(n+8):nth-last-child(n+4),
+.b000000001100>div:nth-child(n+9):nth-last-child(n+3),
+.b000000000110>div:nth-child(n+10):nth-last-child(n+2),
+.b000000000011>div:nth-child(n+11),
+
+.b111000000000>div:nth-last-child(n+10),
+.b011100000000>div:nth-child(n+2):nth-last-child(n+9),
+.b001110000000>div:nth-child(n+3):nth-last-child(n+8),
+.b000111000000>div:nth-child(n+4):nth-last-child(n+7),
+.b000011100000>div:nth-child(n+5):nth-last-child(n+6),
+.b000001110000>div:nth-child(n+6):nth-last-child(n+5),
+.b000000111000>div:nth-child(n+7):nth-last-child(n+4),
+.b000000011100>div:nth-child(n+8):nth-last-child(n+3),
+.b000000001110>div:nth-child(n+9):nth-last-child(n+2),
+.b000000000111>div:nth-child(n+10),
+
+.b111100000000>div:nth-last-child(n+9),
+.b011110000000>div:nth-child(n+2):nth-last-child(n+8),
+.b001111000000>div:nth-child(n+3):nth-last-child(n+7),
+.b000111100000>div:nth-child(n+4):nth-last-child(n+6),
+.b000011110000>div:nth-child(n+5):nth-last-child(n+5),
+.b000001111000>div:nth-child(n+6):nth-last-child(n+4),
+.b000000111100>div:nth-child(n+7):nth-last-child(n+3),
+.b000000011110>div:nth-child(n+8):nth-last-child(n+2),
+.b000000001111>div:nth-child(n+9),
+
+.b111110000000>div:nth-last-child(n+8),
+.b011111000000>div:nth-child(n+2):nth-last-child(n+7),
+.b001111100000>div:nth-child(n+3):nth-last-child(n+6),
+.b000111110000>div:nth-child(n+4):nth-last-child(n+5),
+.b000011111000>div:nth-child(n+5):nth-last-child(n+4),
+.b000001111100>div:nth-child(n+6):nth-last-child(n+3),
+.b000000111110>div:nth-child(n+7):nth-last-child(n+2),
+.b000000011111>div:nth-child(n+8),
+
+.b111111000000>div:nth-last-child(n+7),
+.b011111100000>div:nth-child(n+2):nth-last-child(n+6),
+.b001111110000>div:nth-child(n+3):nth-last-child(n+5),
+.b000111111000>div:nth-child(n+4):nth-last-child(n+4),
+.b000011111100>div:nth-child(n+5):nth-last-child(n+3),
+.b000001111110>div:nth-child(n+6):nth-last-child(n+2),
+.b000000111111>div:nth-child(n+7),
+
+.b111111100000>div:nth-last-child(n+6),
+.b011111110000>div:nth-child(n+2):nth-last-child(n+5),
+.b001111111000>div:nth-child(n+3):nth-last-child(n+4),
+.b000111111100>div:nth-child(n+4):nth-last-child(n+3),
+.b000011111110>div:nth-child(n+5):nth-last-child(n+2),
+.b000001111111>div:nth-child(n+6),
+
+.b111111110000>div:nth-last-child(n+5),
+.b011111111000>div:nth-child(n+2):nth-last-child(n+4),
+.b001111111100>div:nth-child(n+3):nth-last-child(n+3),
+.b000111111110>div:nth-child(n+4):nth-last-child(n+2),
+.b000011111111>div:nth-child(n+5),
+
+.b111111111000>div:nth-last-child(n+4),
+.b011111111100>div:nth-child(n+2):nth-last-child(n+3),
+.b001111111110>div:nth-child(n+3):nth-last-child(n+2),
+.b000111111111>div:nth-child(n+4),
+
+.b111111111100>div:nth-last-child(n+3),
+.b011111111110>div:nth-child(n+2):nth-last-child(n+2),
+.b001111111111>div:nth-child(n+3),
+
+.b111111111110>div:nth-last-child(n+2),
+.b011111111111>div:nth-child(n+2),
+
+.b111111111111>div,
+
+.b10000000000000000>div:nth-child(1),
+.b010000000000000000>div:nth-child(2),
+.b001000000000000000>div:nth-child(3),
+.b000100000000000000>div:nth-child(4),
+.b000010000000000000>div:nth-child(5),
+.b000001000000000000>div:nth-child(6),
+.b000000100000000000>div:nth-child(7),
+.b000000010000000000>div:nth-child(8),
+.b000000001000000000>div:nth-child(9),
+.b000000000100000000>div:nth-child(10),
+.b000000000010000000>div:nth-child(11),
+.b000000000001000000>div:nth-child(12),
+.b000000000000100000>div:nth-child(13),
+.b000000000000010000>div:nth-child(14),
+.b000000000000001000>div:nth-child(15),
+.b000000000000000100>div:nth-child(16),
+.b000000000000000010>div:nth-child(17),
+.b000000000000000001>div:nth-child(18),
+
+.b110000000000000000>div:nth-last-child(n+17),
+.b011000000000000000>div:nth-child(n+2):nth-last-child(n+16),
+.b001100000000000000>div:nth-child(n+3):nth-last-child(n+15),
+.b000110000000000000>div:nth-child(n+4):nth-last-child(n+14),
+.b000011000000000000>div:nth-child(n+5):nth-last-child(n+13),
+.b000001100000000000>div:nth-child(n+6):nth-last-child(n+12),
+.b000000110000000000>div:nth-child(n+7):nth-last-child(n+11),
+.b000000011000000000>div:nth-child(n+8):nth-last-child(n+10),
+.b000000001100000000>div:nth-child(n+9):nth-last-child(n+9),
+.b000000000110000000>div:nth-child(n+10):nth-last-child(n+8),
+.b000000000011000000>div:nth-child(n+11):nth-last-child(n+7),
+.b000000000001100000>div:nth-child(n+12):nth-last-child(n+6),
+.b000000000000110000>div:nth-child(n+13):nth-last-child(n+5),
+.b000000000000011000>div:nth-child(n+14):nth-last-child(n+4),
+.b000000000000001100>div:nth-child(n+15):nth-last-child(n+3),
+.b000000000000000110>div:nth-child(n+16):nth-last-child(n+2),
+.b000000000000000011>div:nth-child(n+17),
+
+.b111000000000000000>div:nth-last-child(n+16),
+.b011100000000000000>div:nth-child(n+2):nth-last-child(n+15),
+.b001110000000000000>div:nth-child(n+3):nth-last-child(n+14),
+.b000111000000000000>div:nth-child(n+4):nth-last-child(n+13),
+.b000011100000000000>div:nth-child(n+5):nth-last-child(n+12),
+.b000001110000000000>div:nth-child(n+6):nth-last-child(n+11),
+.b000000111000000000>div:nth-child(n+7):nth-last-child(n+10),
+.b000000011100000000>div:nth-child(n+8):nth-last-child(n+9),
+.b000000001110000000>div:nth-child(n+9):nth-last-child(n+8),
+.b000000000111000000>div:nth-child(n+10):nth-last-child(n+7),
+.b000000000011100000>div:nth-child(n+11):nth-last-child(n+6),
+.b000000000001110000>div:nth-child(n+12):nth-last-child(n+5),
+.b000000000000111000>div:nth-child(n+13):nth-last-child(n+4),
+.b000000000000011100>div:nth-child(n+14):nth-last-child(n+3),
+.b000000000000001110>div:nth-child(n+15):nth-last-child(n+2),
+.b000000000000000111>div:nth-child(n+16),
+
+.b111100000000000000>div:nth-last-child(n+15),
+.b011110000000000000>div:nth-child(n+2):nth-last-child(n+14),
+.b001111000000000000>div:nth-child(n+3):nth-last-child(n+13),
+.b000111100000000000>div:nth-child(n+4):nth-last-child(n+12),
+.b000011110000000000>div:nth-child(n+5):nth-last-child(n+11),
+.b000001111000000000>div:nth-child(n+6):nth-last-child(n+10),
+.b000000111100000000>div:nth-child(n+7):nth-last-child(n+9),
+.b000000011110000000>div:nth-child(n+8):nth-last-child(n+8),
+.b000000001111000000>div:nth-child(n+9):nth-last-child(n+7),
+.b000000000111100000>div:nth-child(n+10):nth-last-child(n+6),
+.b000000000011110000>div:nth-child(n+11):nth-last-child(n+5),
+.b000000000001111000>div:nth-child(n+12):nth-last-child(n+4),
+.b000000000000111100>div:nth-child(n+13):nth-last-child(n+3),
+.b000000000000011110>div:nth-child(n+14):nth-last-child(n+2),
+.b000000000000001111>div:nth-child(n+15),
+
+.b111110000000000000>div:nth-last-child(n+14),
+.b011111000000000000>div:nth-child(n+2):nth-last-child(n+13),
+.b001111100000000000>div:nth-child(n+3):nth-last-child(n+12),
+.b000111110000000000>div:nth-child(n+4):nth-last-child(n+11),
+.b000011111000000000>div:nth-child(n+5):nth-last-child(n+10),
+.b000001111100000000>div:nth-child(n+6):nth-last-child(n+9),
+.b000000111110000000>div:nth-child(n+7):nth-last-child(n+8),
+.b000000011111000000>div:nth-child(n+8):nth-last-child(n+7),
+.b000000001111100000>div:nth-child(n+9):nth-last-child(n+6),
+.b000000000111110000>div:nth-child(n+10):nth-last-child(n+5),
+.b000000000011111000>div:nth-child(n+11):nth-last-child(n+4),
+.b000000000001111100>div:nth-child(n+12):nth-last-child(n+3),
+.b000000000000111110>div:nth-child(n+13):nth-last-child(n+2),
+.b000000000000011111>div:nth-child(n+14),
+
+.b111111000000000000>div:nth-last-child(n+13),
+.b011111100000000000>div:nth-child(n+2):nth-last-child(n+12),
+.b001111110000000000>div:nth-child(n+3):nth-last-child(n+11),
+.b000111111000000000>div:nth-child(n+4):nth-last-child(n+10),
+.b000011111100000000>div:nth-child(n+5):nth-last-child(n+9),
+.b000001111110000000>div:nth-child(n+6):nth-last-child(n+8),
+.b000000111111000000>div:nth-child(n+7):nth-last-child(n+7),
+.b000000011111100000>div:nth-child(n+8):nth-last-child(n+6),
+.b000000001111110000>div:nth-child(n+9):nth-last-child(n+5),
+.b000000000111111000>div:nth-child(n+10):nth-last-child(n+4),
+.b000000000011111100>div:nth-child(n+11):nth-last-child(n+3),
+.b000000000001111110>div:nth-child(n+12):nth-last-child(n+2),
+.b000000000000111111>div:nth-child(n+13),
+
+.b111111100000000000>div:nth-last-child(n+12),
+.b011111110000000000>div:nth-child(n+2):nth-last-child(n+11),
+.b001111111000000000>div:nth-child(n+3):nth-last-child(n+10),
+.b000111111100000000>div:nth-child(n+4):nth-last-child(n+9),
+.b000011111110000000>div:nth-child(n+5):nth-last-child(n+8),
+.b000001111111000000>div:nth-child(n+6):nth-last-child(n+7),
+.b000000111111100000>div:nth-child(n+7):nth-last-child(n+6),
+.b000000011111110000>div:nth-child(n+8):nth-last-child(n+5),
+.b000000001111111000>div:nth-child(n+9):nth-last-child(n+4),
+.b000000000111111100>div:nth-child(n+10):nth-last-child(n+3),
+.b000000000011111110>div:nth-child(n+11):nth-last-child(n+2),
+.b000000000001111111>div:nth-child(n+12),
+
+.b111111110000000000>div:nth-last-child(n+11),
+.b011111111000000000>div:nth-child(n+2):nth-last-child(n+10),
+.b001111111100000000>div:nth-child(n+3):nth-last-child(n+9),
+.b000111111110000000>div:nth-child(n+4):nth-last-child(n+8),
+.b000011111111000000>div:nth-child(n+5):nth-last-child(n+7),
+.b000001111111100000>div:nth-child(n+6):nth-last-child(n+6),
+.b000000111111110000>div:nth-child(n+7):nth-last-child(n+5),
+.b000000011111111000>div:nth-child(n+8):nth-last-child(n+4),
+.b000000001111111100>div:nth-child(n+9):nth-last-child(n+3),
+.b000000000111111110>div:nth-child(n+10):nth-last-child(n+2),
+.b000000000011111111>div:nth-child(n+11),
+
+.b111111111000000000>div:nth-last-child(n+10),
+.b011111111100000000>div:nth-child(n+2):nth-last-child(n+9),
+.b001111111110000000>div:nth-child(n+3):nth-last-child(n+8),
+.b000111111111000000>div:nth-child(n+4):nth-last-child(n+7),
+.b000011111111100000>div:nth-child(n+5):nth-last-child(n+6),
+.b000001111111110000>div:nth-child(n+6):nth-last-child(n+5),
+.b000000111111111000>div:nth-child(n+7):nth-last-child(n+4),
+.b000000011111111100>div:nth-child(n+8):nth-last-child(n+3),
+.b000000001111111110>div:nth-child(n+9):nth-last-child(n+2),
+.b000000000111111111>div:nth-child(n+10),
+
+.b111111111100000000>div:nth-last-child(n+9),
+.b011111111110000000>div:nth-child(n+2):nth-last-child(n+8),
+.b001111111111000000>div:nth-child(n+3):nth-last-child(n+7),
+.b000111111111100000>div:nth-child(n+4):nth-last-child(n+6),
+.b000011111111110000>div:nth-child(n+5):nth-last-child(n+5),
+.b000001111111111000>div:nth-child(n+6):nth-last-child(n+4),
+.b000000111111111100>div:nth-child(n+7):nth-last-child(n+3),
+.b000000011111111110>div:nth-child(n+8):nth-last-child(n+2),
+.b000000001111111111>div:nth-child(n+9),
+
+.b111111111110000000>div:nth-last-child(n+8),
+.b011111111111000000>div:nth-child(n+2):nth-last-child(n+7),
+.b001111111111100000>div:nth-child(n+3):nth-last-child(n+6),
+.b000111111111110000>div:nth-child(n+4):nth-last-child(n+5),
+.b000011111111111000>div:nth-child(n+5):nth-last-child(n+4),
+.b000001111111111100>div:nth-child(n+6):nth-last-child(n+3),
+.b000000111111111110>div:nth-child(n+7):nth-last-child(n+2),
+.b000000011111111111>div:nth-child(n+8),
+
+.b111111111111000000>div:nth-last-child(n+7),
+.b011111111111100000>div:nth-child(n+2):nth-last-child(n+6),
+.b001111111111110000>div:nth-child(n+3):nth-last-child(n+5),
+.b000111111111111000>div:nth-child(n+4):nth-last-child(n+4),
+.b000011111111111100>div:nth-child(n+5):nth-last-child(n+3),
+.b000001111111111110>div:nth-child(n+6):nth-last-child(n+2),
+.b000000111111111111>div:nth-child(n+7),
+
+.b111111111111100000>div:nth-last-child(n+6),
+.b011111111111110000>div:nth-child(n+2):nth-last-child(n+5),
+.b001111111111111000>div:nth-child(n+3):nth-last-child(n+4),
+.b000111111111111100>div:nth-child(n+4):nth-last-child(n+3),
+.b000011111111111110>div:nth-child(n+5):nth-last-child(n+2),
+.b000001111111111111>div:nth-child(n+6),
+
+.b111111111111110000>div:nth-last-child(n+5),
+.b011111111111111000>div:nth-child(n+2):nth-last-child(n+4),
+.b001111111111111100>div:nth-child(n+3):nth-last-child(n+3),
+.b000111111111111110>div:nth-child(n+4):nth-last-child(n+2),
+.b000011111111111111>div:nth-child(n+5),
+
+.b111111111111111000>div:nth-last-child(n+4),
+.b011111111111111100>div:nth-child(n+2):nth-last-child(n+3),
+.b001111111111111110>div:nth-child(n+3):nth-last-child(n+2),
+.b000111111111111111>div:nth-child(n+4),
+
+.b111111111111111100>div:nth-last-child(n+3),
+.b011111111111111110>div:nth-child(n+2):nth-last-child(n+2),
+.b001111111111111111>div:nth-child(n+3),
+
+.b111111111111111110>div:nth-last-child(n+2),
+.b011111111111111111>div:nth-child(n+2),
+
+.b111111111111111111>div {
+  background-color: #fff;
+}
+/* jsfiddle.net/2bj7w48z/17 */
